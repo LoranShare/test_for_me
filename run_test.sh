@@ -1,5 +1,6 @@
 #!/bin/bash
-#
+## @author		Gevorgyan Ovik
+## @brief		Test runner script
 
 MEM_SIZE=8000
 CHUNK_SIZE=160

@@ -1,4 +1,4 @@
-## @author      Gevorgyan Ovik
+## @author		Gevorgyan Ovik
 ## @brief		Makefile
 
 # Option section

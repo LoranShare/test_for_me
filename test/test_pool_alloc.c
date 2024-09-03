@@ -25,7 +25,6 @@ int tearDown(void) {
     return 0;
 }
 
-/* Создание экземпляра, выделение блока, освобождение блока */
 void test_alloc_1_chunk(void) {
     PoolAlloc_t *pool_allocator = NULL;
     size_t chunk_size;
@@ -45,7 +44,6 @@ void test_alloc_1_chunk(void) {
 #endif
 }
 
-/* Создание экземпляра, выделение всех блоков, выделение еще блоков, освобождение блоков */
 void test_alloc_all_chunks(void) {
     PoolAlloc_t *pool_allocator  = NULL;
     void *ptr[MAX_NUM_OF_CHUNKS] = {NULL};
@@ -71,8 +69,6 @@ void test_alloc_all_chunks(void) {
 #endif
 }
 
-/* Создание экземпляра, выделение всех блоков, освобождение блоков, не входящих в данный адрес
-    блоков не являющихся началом блоков, повторное освобождение блоков */
 void test_twice_free(void) {
     PoolAlloc_t *pool_allocator = NULL;
     size_t chunk_size;
