@@ -39,12 +39,16 @@
 #define FILL_MEM  ///<
 
 /* Private typedef -----------------------------------------------------------*/
+typedef struct Mutex {
+} Mutex_t;
+
 typedef struct PoolAlloc {
     void *start;
     void *end;
     void *base_addr;
     size_t total_num_chunks;
     size_t free_num_chunks;
+    Mutex_t mutex;
 
 } PoolAlloc_t;
 
@@ -52,6 +56,11 @@ typedef struct PoolChunk {
     struct PoolChunk *next_ptr;
     uint8_t free;
 } PoolChunk_t;
+
+/* Private macro -------------------------------------------------------------*/
+#define init_mutex(x)
+#define lock_mutex(x)
+#define free_mutex(x)
 
 /* Private variables ---------------------------------------------------------*/
 /**
@@ -94,6 +103,7 @@ int init_alloc(PoolAlloc_t **pool_allocator) {
     allocator.start     = (void *)base_addr;
     allocator.base_addr = (void *)base_addr;
     allocator.end       = (void *)end_addr;
+    init_mutex(&allocator.mutex);
 
     for (int i = 0; i < allocator.total_num_chunks; ++i) {
         cur_chuck           = (PoolChunk_t *)(base_addr + i * CHUNK_SIZE);
@@ -117,6 +127,8 @@ void *pool_alloc(PoolAlloc_t *pool_allocator) {
 
     PoolChunk_t *head_ptr = (PoolChunk_t *)pool_allocator->base_addr;
 
+    lock_mutex(&pool_allocator->mutex);
+
     if (head_ptr) {
         head_ptr->free            = 0;
         pool_allocator->base_addr = (void *)head_ptr->next_ptr;
@@ -128,6 +140,9 @@ void *pool_alloc(PoolAlloc_t *pool_allocator) {
         /// @note можно заполнением выравнить адрес по нужной границе
         head_ptr = (PoolChunk_t *)((uintptr_t)head_ptr + sizeof(*head_ptr));
     }
+    free_mutex(&pool_allocator->mutex);
+
+    free_mutex(&pool_allocator->mutex);
 
     return (void *)head_ptr;
 }
@@ -152,10 +167,14 @@ int pool_free(PoolAlloc_t *pool_allocator, void *mem_ptr) {
         return -1;
     }
 
+    lock_mutex(&pool_allocator->mutex);
+
     chunk->next_ptr           = pool_allocator->base_addr;
     chunk->free               = 1;
     pool_allocator->base_addr = (void *)chunk;
     ++pool_allocator->free_num_chunks;
+
+    free_mutex(&pool_allocator->mutex);
 
     return 0;
 }
@@ -206,12 +225,16 @@ int hexdump(const void *data, size_t size) {
 void print_structure(PoolAlloc_t *pool_allocator) {
     PoolChunk_t *chunk = (PoolChunk_t *)pool_allocator->base_addr;
     size_t i           = 0;
+
+    lock_mutex(&pool_allocator->mutex);
     printf("\n");
     while (chunk) {
         printf("\n%ld. Addr %p, free %d\n", i++, chunk, chunk->free);
         hexdump(((void *)(uintptr_t)chunk + sizeof(*chunk)), CHUNK_SIZE - sizeof(*chunk));
         chunk = chunk->next_ptr;
     }
+
+    free_mutex(&pool_allocator->mutex);
 }
 
 size_t pool_get_chunksize(PoolAlloc_t *pool_allocator) {
