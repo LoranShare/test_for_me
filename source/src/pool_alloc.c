@@ -60,8 +60,8 @@ typedef struct PoolChunk {
  */
 
 static PoolAlloc_t allocator;
-uint8_t mem[MEM_SIZE];
-uint8_t *mem_ptr = &mem[1];
+static uint8_t mem[MEM_SIZE];
+static uint8_t *mem_ptr = &mem[1];
 
 /* Private functions ---------------------------------------------------------*/
 static size_t get_aligned_value(size_t n, size_t k) {
@@ -120,15 +120,16 @@ void *pool_alloc(PoolAlloc_t *pool_allocator) {
     if (head_ptr) {
         head_ptr->free            = 0;
         pool_allocator->base_addr = (void *)head_ptr->next_ptr;
-        --pool_allocator->free_num_chunks;
 
         /// @todo ассерт на данный счетчик, т.к. в релизе проверка мб не интересна
+        --pool_allocator->free_num_chunks;
+        head_ptr->next_ptr = NULL;
+
+        /// @note можно заполнением выравнить адрес по нужной границе
+        head_ptr = (PoolChunk_t *)((uintptr_t)head_ptr + sizeof(*head_ptr));
     }
 
-    head_ptr->next_ptr = NULL;
-
-    /// @note можно заполнением выравнить адрес по нужной границе
-    return (void *)((uintptr_t)head_ptr + sizeof(*head_ptr));
+    return (void *)head_ptr;
 }
 
 int pool_free(PoolAlloc_t *pool_allocator, void *mem_ptr) {
@@ -215,6 +216,14 @@ void print_structure(PoolAlloc_t *pool_allocator) {
 
 size_t pool_get_chunksize(PoolAlloc_t *pool_allocator) {
     return (size_t)CHUNK_SIZE - sizeof(PoolChunk_t);
+}
+
+void *get_start_mem_addr(void) {
+    return (void *)mem;
+}
+
+void *get_end_mem_addr(void) {
+    return (void *)((uintptr_t)mem + sizeof(mem));
 }
 
 #endif

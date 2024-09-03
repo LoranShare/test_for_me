@@ -39,6 +39,8 @@ size_t get_total_capacity(PoolAlloc_t *pool_allocator);
 
 #ifdef TEST
 void print_structure(PoolAlloc_t *pool_allocator);
+void *get_start_mem_addr(void);
+void *get_end_mem_addr(void);
 #endif
 
 #endif /* __POOL_ALLOC_H__ */
