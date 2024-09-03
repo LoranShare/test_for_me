@@ -5,6 +5,7 @@
 MEM_SIZE ?=
 CHUNK_SIZE ?=
 DEFS ?=
+DEFS += TEST
 
 # Common section
 PROGRAM_NAME = cunit_test

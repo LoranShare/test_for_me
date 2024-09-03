@@ -2,7 +2,7 @@
 #
 
 MEM_SIZE=8000
-CHUNK_SIZE=80
+CHUNK_SIZE=160
 PATH_TO_MAKEFILE=.
 
 ./test/test_make.sh
